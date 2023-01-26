@@ -41,7 +41,20 @@ public class PhoneAdapter extends RecyclerView.Adapter<PhoneAdapter.MyViewHolder
         phoneList.add(phone);
         notifyDataSetChanged();//새로고침
     }
+    // update
+    public void updateItem(Phone phone, int position){
+        //phoneList.set(position, phone);
+        Phone p = phoneList.get(position);
+        p.setName(phone.getName());
+        p.setTel(phone.getTel());
+        notifyDataSetChanged();
+    }
 
+    // delete
+    public void removeItem(int position){
+        phoneList.remove(position);
+        notifyDataSetChanged();
+    }
     @NonNull
     @Override
     public PhoneAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -103,13 +116,29 @@ public class PhoneAdapter extends RecyclerView.Adapter<PhoneAdapter.MyViewHolder
 
                     }
                 });
-                dlg.setNegativeButton("닫기", null);
-                dlg.show();
+                dlg.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        PhoneService phoneService = Retrofit2Client.getInstance().getPhoneService();
+                        Call<Void> call = phoneService.deleteById(phone.getId());
+                        call.enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                removeItem(position);
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+
+                            }
+                        });
             }
+        });
+                dlg.show();
+    }
         });
 
     }
-
     @Override
     public int getItemCount() {
         return phoneList==null ? 0 : phoneList.size();
